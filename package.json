@@ -1,0 +1,23 @@
+{
+  "name": "mongo-demo",
+  "version": "1.0.0",
+  "description": "Learn Mongo DB with MOSH",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "mongoose": "^5.13.21"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HoangTienHoa/mongo-demo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HoangTienHoa/mongo-demo/issues"
+  },
+  "homepage": "https://github.com/HoangTienHoa/mongo-demo#readme"
+}
