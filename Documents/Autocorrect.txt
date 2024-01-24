@@ -1,0 +1,219 @@
+Option Explicit
+' *******************************************************
+'  Coded by Hoang Anh Tuan
+' *******************************************************
+
+Sub AutoCorrect()
+
+    ' *******************************************************
+    '  Variables declaration
+    ' *******************************************************
+    Dim A_NGA As Long
+    Dim A_NANG As Long
+    Dim A_MU_SAC As Long
+    Dim A_MU_SAC_HOA As Long
+    Dim A_MU_HUYEN As Long
+    Dim A_MU_NANG As Long
+    Dim E_MU_SAC As Long
+    Dim E_MU_HUYEN As Long
+    Dim E_MU_NANG As Long
+    Dim I_HUYEN As Long
+    Dim I_HOI As Long
+    Dim I_NANG As Long
+    Dim O_NGA As Long
+    Dim O_NANG As Long
+    Dim O_MU_HOI As Long
+    Dim O_MU_NANG As Long
+    Dim O_RAU As Long
+    Dim O_RAU_SAC As Long
+    Dim O_RAU_NANG As Long
+    Dim U_HOI As Long
+    Dim U_NGA As Long
+    Dim U_RAU As Long
+    Dim U_RAU_SAC As Long
+    Dim U_RAU_HOI As Long
+    Dim Y_HUYEN As Long
+    Dim D_GACH_HOA As Long
+
+    Dim Can(10) As String
+    Dim Chi(12) As String
+    Dim NamSinh(100) As String
+    Dim Tuoi(100) As Integer
+    Dim SaoNam(100) As String
+    Dim HanNam(100) As String
+    Dim SaoNu(100) As String
+    Dim HanNu(100) As String
+    Dim CurrentYear As Integer
+    Dim i As Integer
+    Dim j As Integer
+
+    ' *******************************************************
+    '  Initialization
+    ' *******************************************************
+    CurrentYear = Year(Date)
+        
+    A_NGA = &HE3
+    A_NANG = &H1EA1
+    A_MU_SAC = &H1EA5
+    A_MU_SAC_HOA = &H1EA4
+    A_MU_HUYEN = &H1EA7
+    A_MU_NANG = &H1EAD
+    E_MU_SAC = &H1EBF
+    E_MU_HUYEN = &H1EC1
+    E_MU_NANG = &H1EC7
+    I_HUYEN = &HEC
+    I_HOI = &H1EC9
+    I_NANG = &H1ECB
+    O_NGA = &HF5
+    O_NANG = &H1ECD
+    O_MU_HOI = &H1ED5
+    O_MU_NANG = &H1ED9
+    O_RAU = &H1A1
+    O_RAU_SAC = &H1EDB
+    O_RAU_NANG = &H1EE3
+    U_HOI = &H1EE7
+    U_NGA = &H169
+    U_RAU = &H1B0
+    U_RAU_SAC = &H1EE9
+    U_RAU_HOI = &H1EED
+    Y_HUYEN = &H1EF3
+    D_GACH_HOA = &H110
+    
+    Can(4) = "Giáp"
+    Can(5) = ChrW$(A_MU_SAC_HOA) & "t"
+    Can(6) = "Bính"
+    Can(7) = ChrW$(D_GACH_HOA) & "inh"
+    Can(8) = "M" & ChrW$(A_MU_NANG) & "u"
+    Can(9) = "K" & ChrW$(I_HOI)
+    Can(0) = "Canh"
+    Can(1) = "Tân"
+    Can(2) = "Nhâm"
+    Can(3) = "Quí"
+    
+    Chi(4) = "Tí"
+    Chi(5) = "S" & ChrW$(U_RAU_HOI) & "u"
+    Chi(6) = "D" & ChrW$(A_MU_HUYEN) & "n"
+    Chi(7) = "M" & ChrW$(A_NGA) & "o"
+    Chi(8) = "Th" & ChrW$(I_HUYEN) & "n"
+    Chi(9) = "T" & ChrW$(I_NANG)
+    Chi(10) = "Ng" & ChrW$(O_NANG)
+    Chi(11) = "Mùi"
+    Chi(0) = "Thân"
+    Chi(1) = "D" & ChrW$(A_MU_NANG) & "u"
+    Chi(2) = "Tu" & ChrW$(A_MU_SAC) & "t"
+    Chi(3) = "H" & ChrW$(O_RAU_NANG) & "i"
+    
+    ' *******************************************************
+    '  An Tuoi, Can & Chi
+    ' *******************************************************
+    For i = 1 To 100
+        Tuoi(i) = i
+        NamSinh(i) = Can((CurrentYear - i + 1) Mod 10)
+        NamSinh(i) = NamSinh(i) & " "
+        NamSinh(i) = NamSinh(i) & Chi((CurrentYear - i + 1) Mod 12)
+    Next i
+        
+    ' *******************************************************
+    '  An Sao
+    ' *******************************************************
+    For i = 1 To 10
+        SaoNam(i) = ""
+        SaoNu(i) = ""
+    Next i
+    
+    For i = 11 To 100
+        Select Case i
+            '  An sao Tho Tu cho Nam & Van Hon cho Nu
+            Case 11, 20, 29, 38, 47, 56, 65, 74, 83, 92
+                SaoNam(i) = "Th" & ChrW$(O_MU_HOI) & " Tú"
+                SaoNu(i) = "Vân " & "H" & ChrW$(O_RAU_SAC) & "n"
+            '  An sao Thuy Dieu cho Nam & Moc Duc cho Nu
+            Case 12, 21, 30, 39, 48, 57, 66, 75, 84, 93
+                SaoNam(i) = "Th" & ChrW$(U_HOI) & "y Di" & ChrW$(E_MU_NANG) & "u"
+                SaoNu(i) = "M" & ChrW$(O_MU_NANG) & "c " & ChrW$(D_GACH_HOA) & ChrW$(U_RAU_SAC) & "c"
+            '  An sao Thai Bach cho Nam & Thai Am cho Nu
+            Case 13, 22, 31, 40, 49, 58, 67, 76, 85, 94
+                SaoNam(i) = "Thái B" & ChrW$(A_NANG) & "ch"
+                SaoNu(i) = "Thái Âm"
+            '  An sao Thai Duong cho Nam & Tho Tu cho Nu
+            Case 14, 23, 32, 41, 50, 59, 68, 77, 86, 95
+                SaoNam(i) = "Thái D" & ChrW$(U_RAU) & ChrW$(O_RAU) & "ng"
+                SaoNu(i) = "Th" & ChrW$(O_MU_HOI) & " Tú"
+             ' An sao Van Hon cho Nam & La Hau cho Nu
+            Case 15, 24, 33, 42, 51, 60, 69, 78, 87, 96
+                SaoNam(i) = "Vân H" & ChrW$(O_RAU_SAC) & "n"
+                SaoNu(i) = "La H" & ChrW$(A_MU_HUYEN) & "u"
+            '  An sao Ke Do cho Nam & Thai Duong cho Nu
+            Case 16, 25, 34, 43, 52, 61, 70, 79, 88, 97
+                SaoNam(i) = "K" & ChrW$(E_MU_SAC) & " " & ChrW$(D_GACH_HOA) & "ô"
+                SaoNu(i) = "Thái D" & ChrW$(U_RAU) & ChrW$(O_RAU) & "ng"
+            '  An sao Thai Am cho Nam & Thai Bach cho Nu
+            Case 17, 26, 35, 44, 53, 62, 71, 80, 89, 98
+                SaoNam(i) = "Thái Âm"
+                SaoNu(i) = "Thái B" & ChrW$(A_NANG) & "ch"
+            '  An sao Moc Duc cho Nam & Thuy Dieu cho Nu
+            Case 18, 27, 36, 45, 54, 63, 72, 81, 90, 99
+                SaoNam(i) = "M" & ChrW$(O_MU_NANG) & "c " & ChrW$(D_GACH_HOA) & ChrW$(U_RAU_SAC) & "c"
+                SaoNu(i) = "Th" & ChrW$(U_HOI) & "y Di" & ChrW$(E_MU_NANG) & "u"
+            '  An sao La Hau cho Nam & Ke Do cho Nu
+            Case 19, 28, 37, 46, 55, 64, 73, 82, 91, 100
+                SaoNam(i) = "La H" & ChrW$(A_MU_HUYEN) & "u"
+                SaoNu(i) = "K" & ChrW$(E_MU_SAC) & " " & ChrW$(D_GACH_HOA) & "ô"
+        End Select
+    Next i
+   
+   ' *******************************************************
+    '  An Han
+    ' *******************************************************
+    For i = 1 To 10
+        HanNam(i) = ""
+        HanNu(i) = ""
+    Next i
+    
+    For i = 11 To 100
+        Select Case i
+            '  An han Tam Kheo cho Nam & Thien Tinh cho Nu
+            Case 11, 19, 20, 28, 37, 46, 55, 64, 73, 82, 91, 99, 100
+                HanNam(i) = "Tam Kheo"
+                HanNu(i) = "Thiên Tinh"
+            '  An han Ngu Mo cho Nam & Ngu Mo cho Nu
+            Case 12, 21, 29, 30, 38, 47, 56, 65, 74, 83, 92
+                HanNam(i) = "Ng" & ChrW$(U_NGA) & " M" & ChrW$(O_MU_NANG)
+                HanNu(i) = "Ng" & ChrW$(U_NGA) & " M" & ChrW$(O_MU_NANG)
+            '  An han Thien Tinh cho Nam & Tam Kheo cho Nu
+            Case 13, 22, 31, 39, 40, 48, 57, 66, 75, 84, 93
+                HanNam(i) = "Thiên Tinh"
+                HanNu(i) = "Tam Kheo"
+            '  An han Toan Tan cho Nam & Huynh Tuyen cho Nu
+            Case 14, 23, 32, 41, 49, 50, 58, 67, 76, 85, 94
+                HanNam(i) = "Toán T" & ChrW$(A_MU_NANG) & "n"
+                HanNu(i) = "Hu" & ChrW$(Y_HUYEN) & "nh Tuy" & ChrW$(E_MU_HUYEN) & "n"
+            '  An han Thien La cho Nam & Diem Vuong cho Nu
+            Case 15, 24, 33, 42, 51, 59, 60, 68, 77, 86, 95
+                HanNam(i) = "Thiên La"
+                HanNu(i) = "Diêm V" & ChrW$(U_RAU) & ChrW$(O_RAU) & "ng"
+            '  An han Dia Vong cho Nam & Dia Vong cho Nu
+            Case 16, 25, 34, 43, 52, 61, 69, 70, 78, 87, 96
+                HanNam(i) = ChrW$(D_GACH_HOA) & ChrW$(I_NANG) & "a V" & ChrW$(O_NGA) & "ng"
+                HanNu(i) = ChrW$(D_GACH_HOA) & ChrW$(I_NANG) & "a V" & ChrW$(O_NGA) & "ng"
+            '  An han Diem Vuong cho Nam & Thien La cho Nu
+            Case 17, 26, 35, 44, 53, 62, 71, 79, 80, 88, 97
+                HanNam(i) = "Diêm V" & ChrW$(U_RAU) & ChrW$(O_RAU) & "ng"
+                HanNu(i) = "Thiên La"
+            '  An han Huynh Tuyen cho Nam & Toan Tan cho Nu
+            Case 18, 27, 36, 45, 54, 63, 72, 81, 89, 90, 98
+                HanNam(i) = "Hu" & ChrW$(Y_HUYEN) & "nh Tuy" & ChrW$(E_MU_HUYEN) & "n"
+                HanNu(i) = "Toán T" & ChrW$(A_MU_NANG) & "n"
+        End Select
+    Next i
+    
+    ' *******************************************************
+    '  Update AutoCorrect entries
+    ' *******************************************************
+    For i = 1 To 100
+        Application.AutoCorrect.Entries.Add Tuoi(i) & "a", NamSinh(i) & vbTab & Tuoi(i) & vbTab & SaoNam(i) & vbTab & HanNam(i)
+        Application.AutoCorrect.Entries.Add Tuoi(i) & "z", NamSinh(i) & vbTab & Tuoi(i) & vbTab & SaoNu(i) & vbTab & HanNu(i)
+    Next i
+    
+    MsgBox ("Auto Correct entries have been updated!")
+End Sub

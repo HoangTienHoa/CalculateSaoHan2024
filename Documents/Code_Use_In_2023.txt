@@ -1,0 +1,1026 @@
+const express = require('express');
+const config = require('config');
+const fs = require('fs');
+const formidable = require('formidable');
+const xlsx = require('xlsx');
+const fastSort = require('fast-sort');
+
+const router = express.Router();
+const project = require('../controllers/resources/project');
+const dataSet = require('../controllers/resources/dataSet');
+const testCaseResource = require('../controllers/resources/testcase');
+const testSuiteResource = require('../controllers/resources/testsuite');
+const testScriptResultResource = require('../controllers/resources/testscriptResult');
+const isAuthenticated = require('./index').isAuthenticated;
+const lodash = require('lodash');
+const xlstojson = require('../controllers/lib/xls-to-json');
+const xlsxtojson = require('../controllers/lib/xlsx-to-json');
+
+const DOT = '.';
+const logger = require('../controllers/lib/logger');
+const Json2csvParser = require('json2csv').Parser;
+const util = require('../common/util');
+const snapshotInfo = require('../controllers/resources/snapshotInfo');
+const os = require('os');
+const path = require('path');
+
+let saoNam = [], hanNam = [];
+let saoNu = [], hanNu = [];
+
+//Tính Sao cho Nam Và Nữ
+function tinhSao() {
+  saoNam = [];
+  saoNu = [];
+  for (let i = 0; i <= 10; i++) {
+    saoNam[i] = "";
+    saoNu[i] = "";
+  }
+  for (let i = 11; i <= 100; i++) {
+    switch (i) {
+      case 11:
+      case 20:
+      case 29:
+      case 38:
+      case 47:
+      case 56:
+      case 65:
+      case 74:
+      case 83:
+      case 92:
+        saoNam[i] = "Thổ Tú";
+        saoNu[i] = "Vân Hớn";
+        break;
+      case 12:
+      case 21:
+      case 30:
+      case 39:
+      case 48:
+      case 57:
+      case 66:
+      case 75:
+      case 84:
+      case 93:
+        saoNam[i] = "Thủy Diệu";
+        saoNu[i] = "Mộc Đức";
+        break;
+      case 13:
+      case 22:
+      case 31:
+      case 40:
+      case 49:
+      case 58:
+      case 67:
+      case 76:
+      case 85:
+      case 94:
+        saoNam[i] = "Thái bạch";
+        saoNu[i] = "Thái Âm";
+        break;
+      case 14:
+      case 23:
+      case 32:
+      case 41:
+      case 50:
+      case 59:
+      case 68:
+      case 77:
+      case 86:
+      case 95:
+        saoNam[i] = "Thái Dương";
+        saoNu[i] = "Thổ Tú";
+        break;
+      case 15:
+      case 24:
+      case 33:
+      case 42:
+      case 51:
+      case 60:
+      case 69:
+      case 78:
+      case 87:
+      case 96:
+        saoNam[i] = "Vân Hớn";
+        saoNu[i] = "La Hầu";
+        break;
+      case 16:
+      case 25:
+      case 34:
+      case 43:
+      case 52:
+      case 61:
+      case 70:
+      case 79:
+      case 88:
+      case 97:
+        saoNam[i] = "Kế Đô";
+        saoNu[i] = "Thái Dương";
+        break;
+      case 17:
+      case 26:
+      case 35:
+      case 44:
+      case 53:
+      case 62:
+      case 71:
+      case 80:
+      case 89:
+      case 98:
+        saoNam[i] = "Thái Âm";
+        saoNu[i] = "Thái Bạch";
+        break;
+      case 18:
+      case 27:
+      case 36:
+      case 45:
+      case 54:
+      case 63:
+      case 72:
+      case 81:
+      case 90:
+      case 99:
+        saoNam[i] = "Mộc Đức";
+        saoNu[i] = "Thủy Diệu";
+        break;
+      case 19:
+      case 28:
+      case 37:
+      case 46:
+      case 55:
+      case 64:
+      case 73:
+      case 82:
+      case 91:
+      case 100:
+        saoNam[i] = "La Hầu";
+        saoNu[i] = "Kế Đô";
+        break;
+    }
+  }
+  for (let i = 101; i <= 200; i++) {
+    saoNam[i] = "";
+    saoNu[i] = "";
+  }
+}
+
+//Tính Hạn cho Nam Và Nữ
+function tinhHan() {
+  hanNam = [];
+  hanNu = [];
+  for (let i = 0; i <= 10; i++) {
+    hanNam[i] = "";
+    hanNu[i] = "";
+  }
+  for (let i = 11; i <= 100; i++) {
+    switch (i) {
+      case 11:
+      case 19:
+      case 20:
+      case 28:
+      case 37:
+      case 46:
+      case 55:
+      case 64:
+      case 73:
+      case 82:
+      case 91:
+      case 99:
+      case 100:
+        hanNam[i] = "Tam Kheo";
+        hanNu[i] = "Thiên Tinh";
+        break;
+      case 12:
+      case 21:
+      case 29:
+      case 30:
+      case 38:
+      case 47:
+      case 56:
+      case 65:
+      case 74:
+      case 83:
+      case 92:
+        hanNam[i] = "Ngũ Mộ";
+        hanNu[i] = "Ngũ Mộ";
+        break;
+      case 13:
+      case 22:
+      case 31:
+      case 39:
+      case 40:
+      case 48:
+      case 57:
+      case 66:
+      case 75:
+      case 84:
+      case 93:
+        hanNam[i] = "Thiên Tinh";
+        hanNu[i] = "Tam Kheo";
+        break;
+      case 14:
+      case 23:
+      case 32:
+      case 41:
+      case 49:
+      case 50:
+      case 58:
+      case 67:
+      case 76:
+      case 85:
+      case 94:
+        hanNam[i] = "Tán Tận";
+        hanNu[i] = "Huỳnh Tiền";
+        break;
+      case 15:
+      case 24:
+      case 33:
+      case 42:
+      case 51:
+      case 59:
+      case 60:
+      case 68:
+      case 77:
+      case 86:
+      case 95:
+        hanNam[i] = "Thiên La";
+        hanNu[i] = "Diêm Vương";
+        break;
+      case 16:
+      case 25:
+      case 34:
+      case 43:
+      case 52:
+      case 61:
+      case 69:
+      case 70:
+      case 78:
+      case 87:
+      case 96:
+        hanNam[i] = "Địa Võng";
+        hanNu[i] = "Địa Võng";
+        break;
+      case 17:
+      case 26:
+      case 35:
+      case 44:
+      case 53:
+      case 62:
+      case 71:
+      case 79:
+      case 80:
+      case 88:
+      case 97:
+        hanNam[i] = "Diêm Vương";
+        hanNu[i] = "Thiên La";
+        break;
+      case 18:
+      case 27:
+      case 36:
+      case 45:
+      case 54:
+      case 63:
+      case 72:
+      case 81:
+      case 89:
+      case 90:
+      case 98:
+        hanNam[i] = "Huỳnh Tiền";
+        hanNu[i] = "Tán Tận";
+        break;
+    }
+  }
+  for (let i = 101; i <= 200; i++) {
+    hanNam[i] = "";
+    hanNu[i] = "";
+  }
+}
+router.get('/:projectid/data', isAuthenticated, (req, res, next) => {
+  project.getProjectById(req.params.projectid, (err, projectData) => {
+    if (err) {
+      logger.error('Get Project by id failed - Data Set Page');
+      return next(err);
+    }
+    const breadcrums = [{
+      label: projectData.name,
+      url: `${process.env.ROOT_URL}/project/${req.params.projectid}`,
+    },
+    {
+      label: 'data',
+    }];
+    res.render('dataSets', {
+      title: 'Data Sets',
+      pageName: 'datasets', // needed to load some js actions
+      pageType: 'dataSets', // needed to load some js actions
+      projectid: req.params.projectid,
+      project: projectData,
+      layout: 'project_layout',
+      userName: req.session.loggedInMember.userName,
+      currentUser: req.session.loggedInMember,
+      breadcrums,
+    });
+  });
+});
+
+// getting data set list
+router.post('/:projectid/data/getDataSets', isAuthenticated, (req, res) => {
+  const projectId = req.params.projectid;
+
+  // manipulate colName
+  let colName;
+  switch (req.body.colName) {
+    case 'dataSetName':
+      colName = 'name';
+      break;
+    case 'dataSetFilename':
+      colName = 'fileName';
+      break;
+    case 'dataSetLastUpdated':
+      colName = 'modifiedAt';
+      break;
+    case 'dataSetNumOfRows':
+      colName = 'numberOfRows';
+      break;
+    case 'dataSetNumOfLinkedTestScripts':
+      colName = 'name';
+      break;
+    default:
+      colName = 'name';
+      break;
+  }
+  const colOrder = req.body.colOrder == 'asc' ? 1 : -1;
+
+  dataSet.getDataSets(projectId, colName, colOrder, (err, response) => {
+    if (err) {
+      console.error(err);
+    } else {
+      res.setHeader('Content-Type', 'application/json');
+      let work = 0;
+      return new Promise((main_resolve, reject) => {
+        if (response.length == 0) {
+          return main_resolve();
+        }
+        response.forEach((value) => {
+          work++;
+          const dataSetId = value.dataSetId;
+          return new Promise((resolve, reject) => dataSet.getTestScriptByDataSetId(dataSetId)
+            .then((testcase) => {
+              const response = util.getTestScriptFromTestCase(testcase, dataSetId);
+              value.numOfLinked = response.length;
+              work--;
+              resolve();
+              if (work == 0) main_resolve();
+            })
+            .catch((e) => {
+              logger.error(e);
+              res.redirect('../data');
+            }));
+        });
+      }).then(() => {
+        res.json({
+          data: response,
+          success: true,
+        })
+      }).catch((e) => {
+        logger.error(e);
+        res.redirect('../data');
+      });
+    }
+  });
+});
+
+//search/filter data
+router.post('/:projectid/data/searchDataSet', isAuthenticated, (req, res, next) => {
+  logger.info('Search App Tester User - App Tester User Overview');
+  let colName = req.body.colName;
+  if (req.body.colName != 'numOfLinked') {
+    colName = req.body.colName;
+  } else {
+    colName = 'modifiedAt';
+  }
+  const query = JSON.parse(req.body.query);
+  let filter;
+  const colOrder = req.body.colOrder == 'asc' ? 1 : -1;
+  dataSet.searchDataSets(req.params.projectid, colName, colOrder, query, (err, response) => {
+    if (err) {
+      console.error(err);
+    } else {
+      res.setHeader('Content-Type', 'application/json');
+      let work = 0;
+      return new Promise((main_resolve, reject) => {
+        if (response.length == 0) {
+          return main_resolve();
+        }
+        response.forEach((value) => {
+          work++;
+          const dataSetId = value.dataSetId;
+          return new Promise((resolve, reject) => dataSet.getTestScriptByDataSetId(dataSetId)
+            .then((testcase) => {
+              const response = util.getTestScriptFromTestCase(testcase, dataSetId);
+              value.numOfLinked = response.length;
+              work--;
+              resolve();
+              if (work == 0) main_resolve();
+            })
+            .catch((e) => {
+              logger.error(e);
+              res.redirect('../data');
+            }));
+        });
+      }).then(() => {
+        if (req.body.colName == 'numOfLinked') {
+          if (colOrder == 1) {
+            fastSort(response).asc(f => f.numOfLinked);
+          }
+          else {
+            fastSort(response).desc(f => f.numOfLinked);
+          }
+        }
+        return res.json({
+          success: true,
+          data: response,
+        });
+      }).catch((e) => {
+        logger.error(e);
+        res.redirect('../data');
+      });
+    }
+  });
+});
+// saving a new data set
+router.post('/:projectid/data/saveDataSet', isAuthenticated, (req, res) => {
+  let form;
+  try {
+    // init form
+    form = new formidable.IncomingForm();
+  } catch (e) {
+    console.log(e);
+    res.redirect('../data');
+    return;
+  }
+
+  // set folder path
+  form.uploadDir = os.tmpdir() + path.sep;
+
+  // upload process
+  form.parse(req, (err, fields, file) => {
+    if (err) {
+      console.log('Cannot parse form');
+      res.redirect('../data');
+      return;
+    }
+    fields.dataSet_name = fields.dataSet_name.trim();
+    dataSet.getDataSetByName(req.params.projectid, fields.dataSet_name)
+      .then((datasetData) => {
+        let exist = false;
+        //check duplicate name
+        if (datasetData != undefined && datasetData.dataSetId != fields.dataSet_id)
+          exist = true;
+
+        if (exist) {
+          res.setHeader('Content-Type', 'application/json');
+          return res.json({
+            data: 'Name is already in use. Please choose another name.',
+            success: false,
+          });
+        } else {
+          if (fields.updateFlag == 'true') {
+            updateProgress(form, req, res, fields, file);
+          } else {
+            addProgress(form, req, res, fields, file);
+          }
+        }
+      }).catch((e) => {
+        logger.error(e);
+        res.setHeader('Content-Type', 'application/json');
+        return res.json({
+          data: 'Get data set name error',
+          success: false,
+        });
+      });
+  });
+});
+
+router.get('/:projectid/data/:id', isAuthenticated, (req, res, next) => {
+  const dataSetId = parseInt(req.params.id);
+  project.getProjectById(req.params.projectid, (err, projectData) => {
+    if (err) {
+      logger.error('Get Project by id failed - Data Set Detail Page');
+      return next(err);
+    }
+    const projectData_temp = projectData;
+    dataSet.getDataSet(dataSetId)
+      .then((dataset) => {
+        if (!lodash.isNull(dataSet)) {
+          const dataSet_temp = dataset;
+          dataSet.getTestScriptByDataSetId(dataSetId)
+            .then((testcase) => {
+              const response = util.getTestScriptFromTestCase(testcase, dataSetId);
+              dataSet_temp.createdDate = util.timestampToDate(dataSet_temp.createdAt);
+              dataSet_temp.modifiedDate = util.timestampToDate(dataSet_temp.modifiedAt);
+
+              const breadcrums = [{
+                label: projectData.name,
+                url: `${process.env.ROOT_URL}/project/${req.params.projectid}`,
+              },
+              {
+                label: 'data',
+                url: `${process.env.ROOT_URL}/project/${req.params.projectid}/data`,
+              }, {
+                label: 'dataset',
+              }];
+
+              res.render('dataSetDetails', {
+                title: 'Data Set',
+                pageName: 'dataSetDetails', // needed to load some js actions
+                pageType: 'dataSets', // needed to load some js actions
+                userName: req.session.loggedInMember.userName,
+                dataSet: dataSet_temp,
+                project: projectData_temp,
+                projectid: req.params.projectid,
+                numOfLinked: response.length,
+                layout: 'project_layout',
+                currentUser: req.session.loggedInMember,
+                breadcrums,
+              });
+            })
+            .catch((e) => {
+              logger.error(e);
+              res.redirect('../data');
+            });
+        } else {
+          res.redirect('../data');
+        }
+      })
+      .catch((e) => {
+        logger.error(e);
+        res.redirect('../data');
+      });
+  });
+});
+
+router.post('/:projectid/data/:id', isAuthenticated, (req, res, next) => {
+  const dataSetId = parseInt(req.params.id);
+  dataSet.getDataSet(dataSetId)
+    .then((dataSet) => {
+      if (!lodash.isNull(dataSet)) {
+        res.setHeader('Content-Type', 'application/json');
+        return res.json({
+          data: dataSet,
+          success: true,
+        });
+      }
+      logger.error(`Cannot find data set with id: ${dataSetId}`);
+      res.redirect('../data');
+    })
+    .catch((e) => {
+      logger.error(e);
+      res.redirect('../data');
+    });
+});
+
+router.get('/:projectid/data/:id/download', isAuthenticated, (req, res, next) => {
+  const dataSetId = parseInt(req.params.id);
+  dataSet.getDataSet(dataSetId)
+    .then((dataSet) => {
+      if (!lodash.isNull(dataSet)) {
+        let count = 0;
+        tinhSao();
+        tinhHan();
+        for (let i = 0; i < dataSet.dataSetDetails.length; i++) {
+          let dataSetDetail = dataSet.dataSetDetails[i];
+          if ((dataSetDetail.GioiTinh.includes("Nam") || dataSetDetail.GioiTinh.includes("Nữ"))
+            && dataSetDetail.Tuoi != ""
+            && Number.isInteger(parseInt(dataSetDetail.Tuoi))) {
+            let tuoi = parseInt(dataSetDetail.Tuoi) + 1;
+            dataSetDetail.Tuoi = tuoi.toString();
+
+            if (dataSetDetail.GioiTinh.includes("Nam")) {//Nam  
+              dataSetDetail.Sao = saoNam[tuoi];
+              dataSetDetail.Han = hanNam[tuoi];
+            } else {//Nu                   
+              dataSetDetail.Sao = saoNu[tuoi];
+              dataSetDetail.Han = hanNu[tuoi];
+            }
+          } else if (dataSetDetail.GioiTinh != ""//Bị Lỗi gì đó thì ghi lỗi
+            || dataSetDetail.Ten != ""
+            || dataSetDetail.NamSinh != ""
+            || dataSetDetail.Tuoi != ""
+            || dataSetDetail.Sao != ""
+            || dataSetDetail.Han != "") {
+            dataSetDetail.GioiTinh = dataSetDetail.GioiTinh;
+            dataSetDetail.Han = "Lỗi!!!"
+            console.log(dataSetDetail);
+            count++;
+          }
+        }
+        const fileName = dataSet.fileName.split('.').slice(0, -1).join('.');
+        console.log(fileName + " has " + count + " row FALSE");
+        //const data = lodash.map(dataSet.dataSetDetails, o => Object.getOwnPropertyNames(o).reduceRight((r, k) => (r[k] = o[k], r), {}));
+        const json2csvParser = new Json2csvParser({ withBOM: true, quote: '' });
+        const csv = json2csvParser.parse(dataSet.dataSetDetails);
+        res.setHeader('Content-disposition', `attachment; filename=${fileName}.csv`);
+        res.set('Content-Type', 'text/csv');
+        res.status(200).send(csv);
+      } else {
+        logger.error(`Cannot find data set with id: ${dataSetId}`);
+        res.redirect('../data');
+      }
+    })
+    .catch((e) => {
+      logger.error(e);
+      res.redirect('../data');
+    });
+});
+
+/**
+ * API get Where used handler
+ */
+router.get('/:projectid/data/:id/whereused', isAuthenticated, (req, res, next) => {
+  const dataSetId = parseInt(req.params.id);
+  dataSet.getTestScriptByDataSetId(dataSetId)
+    .then((testcase) => {
+      const response = util.getTestScriptFromTestCase(testcase, dataSetId);
+      res.setHeader('Content-Type', 'application/json');
+      return res.json({
+        data: response,
+        success: true,
+      });
+    })
+    .catch((e) => {
+      logger.error(e);
+      res.redirect('../data');
+    });
+});
+
+router.post('/:projectid/data/delete/deleteDataSet', isAuthenticated, (req, res) => {
+  let delTestScriptCount = 0;
+  let delTestSuiteCount = 0;
+  let delTestScriptResultCount = 0;
+
+  dataSet.getTestScriptByDataSetId(req.body.dataSetId)
+    .then((testcase) => {
+      // dataset is not linked to any testscript
+      if (testcase.length == 0) {
+        return deleteDataSet(res, req.body.dataSetId);
+      }
+      // when dataset is linked to testscript
+
+      const response = util.getTestScriptFromTestCase(testcase, req.body.dataSetId);
+
+      response.forEach((tempTestScript) => {
+        delTestScriptCount++;
+        delTestSuiteCount++;
+        delTestScriptResultCount++;
+        // update dataSetId, input, mappingInput of a TestScript
+        testCaseResource.deleteTestScriptWhenDeleteDataSet(req.params.projectid, tempTestScript.testCaseId, tempTestScript.testScriptId, (err, response) => {
+          if (err) {
+            console.error(err);
+            res.redirect('../data');
+          }
+          delTestScriptCount--;
+          if (delTestScriptCount == 0 && delTestSuiteCount == 0 && delTestScriptResultCount == 0) {
+            deleteDataSet(res, req.body.dataSetId);
+          }
+        });
+
+        // update dataSetId, input, mappingInput of a TestScript
+        testSuiteResource.deleteTestSuiteWhenDeleteDataSet(req.params.projectid, tempTestScript.testCaseId, tempTestScript.testScriptId, (err, response) => {
+          if (err) {
+            console.error(err);
+            res.redirect('../data');
+          }
+          delTestSuiteCount--;
+          if (delTestScriptCount == 0 && delTestSuiteCount == 0 && delTestScriptResultCount == 0) {
+            deleteDataSet(res, req.body.dataSetId);
+          }
+        });
+
+        // delete all test script result with testscriptId
+        testScriptResultResource.deleteTestScriptResultWhenDeleteDataSet(tempTestScript.testScriptId)
+          .then(() => {
+            delTestScriptResultCount--;
+            if (delTestScriptCount == 0 && delTestSuiteCount == 0 && delTestScriptResultCount == 0) {
+              deleteDataSet(res, req.body.dataSetId);
+            }
+          })
+          .catch((err) => {
+            logger.error(`Run deleteTestSuiteResultBySuiteId with ${testSuiteResultId} failed${err}`);
+          });
+      });
+
+    })
+    .catch((e) => {
+      logger.error(e);
+      res.redirect('../data');
+    });
+});
+
+function deleteDataSet(res, dataSetId) {
+  dataSet.deleteDataSet(dataSetId, (err, response) => {
+    if (err) {
+      console.error(err);
+      res.redirect('../data');
+    }
+    console.log(response);
+    res.setHeader('Content-Type', 'application/json');
+    return res.json({
+      data: response,
+      success: true,
+    });
+  });
+}
+
+// getting data set list
+router.post('/:projectid/data/update/getDataSetById', isAuthenticated, (req, res) => {
+  dataSet.getDataSetById(req.body.dataSetId, (err, response) => {
+    console.log(response);
+    if (err) {
+      console.error(err);
+    } else {
+      res.setHeader('Content-Type', 'application/json');
+      return res.json({
+        data: response,
+        success: true,
+      });
+    }
+  });
+});
+
+function fileHandleProgress(form, dataSetInput, res, fields, file) {
+  // temp path on server
+  const path = file.dataSet_file.path;
+
+  // get file extension 
+  const arr = file.dataSet_file.name.split(DOT);
+  const ext = arr[arr.length - 1];
+  // new path for file
+  const newpath = form.uploadDir + file.dataSet_file.name;
+  renameFile(path, newpath).then((newpath) => {
+    // set data for dataSetInput
+    dataSetInput.projectId = fields.projectid;
+    dataSetInput.name = fields.dataSet_name;
+    dataSetInput.description = fields.dataSet_description;
+    if (!lodash.isEmpty(fields.dataSet_sheetName)) {
+      dataSetInput.sheetName = fields.dataSet_sheetName;
+    } else {
+      fields.dataSet_sheetName = null;
+    }
+
+    //  check correct sheet name
+    if (!lodash.isNull(fields.dataSet_sheetName)) {
+      const wb = xlsx.readFile(newpath);
+      const isExist = wb.SheetNames.includes(fields.dataSet_sheetName);
+      logger.info(`Sheet name: ${fields.dataSet_sheetName}- List of sheet: ${wb.SheetNames}`);
+      if (!isExist) {
+        deleteFile(newpath);
+        res.setHeader('Content-Type', 'application/json');
+        return res.json({
+          data: `Sheet Name <strong>${fields.dataSet_sheetName}</strong> does not exist in the Spreadsheet - Please check and try again`,
+          success: false,
+        });
+      }
+    }
+
+    dataSetInput.fileName = file.dataSet_file.name;
+
+    // Convert data from csv/xls/xlsx file to json
+    let exceltojson;
+    // Check the extension of the incoming file and use the appropriate module
+    if (file.dataSet_file.name.split('.')[file.dataSet_file.name.split('.').length - 1] === 'xlsx') {
+      exceltojson = xlsxtojson;
+    } else {
+      exceltojson = xlstojson;
+    }
+    exceltojson({
+      input: newpath, // the same path where we uploaded our file
+      output: null, // since we don't need output.json
+      sheet: fields.dataSet_sheetName, // get the specific sheet
+      lowerCaseHeaders: false, // true or false
+    }, (err, result) => {
+      if (err) {
+        deleteFile(newpath);
+        logger.error(`Data set value can not parse to json: ${err}`);
+        res.setHeader('Content-Type', 'application/json');
+        return res.json({
+          data: 'Some data contain special character that not valid for storage.',
+          success: false,
+        });
+      }
+      dataSetInput.dataSetDetails = result;
+      dataSetInput.numberOfRows = result.length;
+      for (element in dataSetInput.dataSetDetails) {
+        for (variable in dataSetInput.dataSetDetails[element]) {
+          if (String(variable).startsWith('$')) {
+            deleteFile(newpath);
+            logger.error(`Data set value is not valid for storage: ${err}`);
+            res.setHeader('Content-Type', 'application/json');
+            return res.json({
+              data: `The field name ${variable} on the field upload contain the dollar ($) prefixed that is not valid for storage.`,
+              success: false,
+            });
+          }
+        }
+      }
+      dataSet.updateDataSet(parseInt(fields.dataSet_id), dataSetInput, (err, response) => {
+        if (err) {
+          deleteFile(newpath);
+          logger.error(`Data set value is not valid for storage: ${err}`);
+          res.setHeader('Content-Type', 'application/json');
+          return res.json({
+            data: 'Error when storage data set to database.',
+            success: false,
+          });
+        }
+        deleteFile(newpath);
+        res.setHeader('Content-Type', 'application/json');
+        return res.json({
+          success: true,
+        });
+      });
+    });
+  }).catch((err) => {
+    deleteFile(newpath);
+    console.log(err);
+    res.setHeader('Content-Type', 'application/json');
+    return res.json({
+      success: false,
+    });
+  });
+}
+
+// For Update Data Set
+function updateProgress(form, req, res, fields, file) {
+  const dataSetInput = {
+    name: '',
+    description: '',
+    projectId: '',
+    sheetName: '',
+    fileName: '',
+    filePath: '',
+    dataSetDetails: [],
+    numberOfRows: 0,
+    newFileFlag: 'false',
+  };
+
+  // does not have new file
+  if (file.dataSet_file.size != 0) {
+    dataSetInput.newFileFlag = 'true';
+    fileHandleProgress(form, dataSetInput, res, fields, file);
+  } else {
+    dataSetInput.name = fields.dataSet_name;
+    dataSetInput.description = fields.dataSet_description;
+    if (typeof fields.dataSet_sheetName !== 'undefined') {
+      dataSetInput.sheetName = fields.dataSet_sheetName;
+    }
+    dataSet.updateDataSet(parseInt(fields.dataSet_id), dataSetInput, (err, response) => {
+      console.log(response);
+      if (err) {
+        console.log(err);
+      }
+      res.setHeader('Content-Type', 'application/json');
+      return res.json({
+        success: true,
+      });
+    });
+  }
+}
+
+// For Add New Data Set
+function addProgress(form, req, res, fields, file) {
+  // temp path on server
+  const path = file.dataSet_file.path;
+
+  // get file extension 
+  const arr = file.dataSet_file.name.split(DOT);
+  const ext = arr[arr.length - 1];
+  // new path for file
+  const newpath = form.uploadDir + file.dataSet_file.name;
+
+  const dataSetInput = {
+    name: '',
+    description: '',
+    projectId: '',
+    sheetName: '',
+    fileName: '',
+    filePath: '',
+    dataSetDetails: [],
+    numberOfRows: 0,
+  };
+
+  renameFile(path, newpath).then((newpath) => {
+    // set data for dataSetInput
+    dataSetInput.projectId = fields.projectid;
+    dataSetInput.name = fields.dataSet_name;
+    dataSetInput.description = fields.dataSet_description;
+    if (!lodash.isEmpty(fields.dataSet_sheetName)) {
+      dataSetInput.sheetName = fields.dataSet_sheetName;
+    } else {
+      fields.dataSet_sheetName = null;
+    }
+
+    //  check correct sheet name
+    if (!lodash.isNull(fields.dataSet_sheetName)) {
+      const wb = xlsx.readFile(newpath);
+      const isExist = wb.SheetNames.includes(fields.dataSet_sheetName);
+      logger.info(`Sheet name: ${fields.dataSet_sheetName}- List of sheet: ${wb.SheetNames}`);
+      if (!isExist) {
+        deleteFile(newpath);
+        res.setHeader('Content-Type', 'application/json');
+        return res.json({
+          data: `Sheet Name <strong>${fields.dataSet_sheetName}</strong> does not exist in the Spreadsheet - Please check and try again`,
+          success: false,
+        });
+      }
+    }
+
+    dataSetInput.fileName = file.dataSet_file.name;
+
+    // Convert data from csv/xls/xlsx file to json
+    let exceltojson;
+    // Check the extension of the incoming file and use the appropriate module
+    if (file.dataSet_file.name.split('.')[file.dataSet_file.name.split('.').length - 1] === 'xlsx') {
+      exceltojson = xlsxtojson;
+    } else {
+      exceltojson = xlstojson;
+    }
+    exceltojson({
+      input: newpath, // the same path where we uploaded our file
+      output: null, // since we don't need output.json
+      sheet: fields.dataSet_sheetName, // get the specific sheet
+      lowerCaseHeaders: false, // true or false
+    }, (err, result) => {
+      if (err) {
+        deleteFile(newpath);
+        logger.error(`Data set value can not parse to json: ${err}`);
+        res.setHeader('Content-Type', 'application/json');
+        return res.json({
+          data: 'Some data contain special character that not valid for storage.',
+          success: false,
+        });
+      }
+      dataSetInput.dataSetDetails = result;
+      dataSetInput.numberOfRows = result.length;
+      for (element in dataSetInput.dataSetDetails) {
+        for (variable in dataSetInput.dataSetDetails[element]) {
+          if (String(variable).startsWith('$')) {
+            deleteFile(newpath);
+            logger.error(`Data set value is not valid for storage: ${err}`);
+            res.setHeader('Content-Type', 'application/json');
+            return res.json({
+              data: `The field name ${variable} on the field upload contain the dollar ($) prefixed that is not valid for storage.`,
+              success: false,
+            });
+          }
+        }
+      }
+      dataSet.postDataSet(dataSetInput, (err, response) => {
+        if (err) {
+          deleteFile(newpath);
+          logger.error(`Data set value is not valid for storage: ${err}`);
+          res.setHeader('Content-Type', 'application/json');
+          return res.json({
+            data: 'Error when storage data set to database.',
+            success: false,
+          });
+        }
+        deleteFile(newpath);
+        res.setHeader('Content-Type', 'application/json');
+        return res.json({
+          success: true,
+        });
+      });
+    });
+  }).catch((err) => {
+    deleteFile(newpath);
+    logger.error(`Excecute addProgress error: ${err}`);
+    res.redirect('../data');
+  });
+}
+
+// delete file
+function deleteFile(path) {
+  return new Promise((resolve, reject) => {
+    fs.unlink(path, (err) => {
+      if (err) {
+        console.log(`Failed to delete file:${err}`);
+        reject();
+      }
+      resolve();
+    });
+  });
+}
+
+// rename file
+function renameFile(path, newpath) {
+  return new Promise((resolve, reject) => {
+    // create a file with new name
+    fs.rename(path, newpath, (err) => {
+      if (err) {
+        console.log('Failed to rename file:');
+        reject();
+      }
+      resolve(newpath);
+    });
+  });
+}
+
+module.exports = router;
