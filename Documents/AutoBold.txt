@@ -1,0 +1,17 @@
+Sub Bold()
+Dim count, max, maxLength As Integer
+count = 0
+max = 3
+maxLength = 6
+    For j = 1 To ActiveDocument.Paragraphs.count
+        If (ActiveDocument.Paragraphs(j).Range.Characters.count <= maxLength) Then
+            count = 0
+        Else
+            count = count + 1
+            If (count <= max) Then
+                ActiveDocument.Paragraphs(j).Range.Font.Bold = True
+            End If
+        End If
+Next j
+MsgBox ("Da Boi Den 3 Dong Dau Tien Thanh Cong!")
+End Sub

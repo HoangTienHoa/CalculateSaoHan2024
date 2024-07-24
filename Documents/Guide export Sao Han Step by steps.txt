@@ -1,33 +1,19 @@
-Hoa Note:
-VSCode:
-	cd /AppTester/app
-	npm run debug
-	pwd: show current location
-	control + c: Stop programe
-	http://localhost:3000/project/1/data: Link program local
 Word:
-	fn + f5 = Goto a page.
+	fn + f5 = Goto a page. (Copy Max 200 pages)
 	fn + command + shift + <-- = Select All from this page to home page
 
 Programe:
-
-#1 Copy word to excel
-#2 Excel To Apptester
-#3 Run program
-#4 Download excel file
-	#1 Format data to separate column: Tab Data -> Text To Columns
-	#2 Search "Lỗi!!!" And check data. Then Remove "Lỗi!!!"
-#5 Copy Excel to word
-	#1 At Excel: Command + C
+#1 Copy word to excel (Sheet1)
+#2 Open SaoHan2024
+#3 Run program: node index.js
+#4 Copy Excel to word. Open sheet Result2
+	#1 At Excel: Command + C (Copy ALL rows)
 	#2 At Word: Paste special -> Unformatted Text
-#6 Run Macro
-
+#5 Run Macro Bold -> It will RUN overnight.
 
 Chùa Note:
-
 #1: Chạy Macro:
 	View > Macros > View Macros.
-
 #2: Cách sử dụng:
 	a là Nam
 	z là Nữ

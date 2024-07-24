@@ -307,7 +307,7 @@ const calSaoHan = (data)=>{
 
 const readExcelAndInsertToDatabase = () =>{
     //Read File
-    const file = reader.readFile('./Sao_Han_2024_Finally.xlsx');
+    const file = reader.readFile('./Sao_Han_2025_Finally.xlsx');
     let data = [];
     const sheets = file.SheetNames;
     numberOfSheet=sheets.length;
@@ -324,12 +324,12 @@ const readExcelAndInsertToDatabase = () =>{
 }
 
 const writeExcel = (persons)=>{
-    const file = reader.readFile('./Sao_Han_2024_Finally.xlsx');
+    const file = reader.readFile('./Sao_Han_2025_Finally.xlsx');
     const ws = reader.utils.json_to_sheet(persons);
     numberOfSheet++;
     const sheetName = "Result"+numberOfSheet;
     reader.utils.book_append_sheet(file,ws,sheetName);
-    reader.writeFile(file,'./Sao_Han_2024_Finally.xlsx')
+    reader.writeFile(file,'./Sao_Han_2025_Finally.xlsx')
 }
 
 const main = ()=>{
