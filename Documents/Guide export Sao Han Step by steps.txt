@@ -9,7 +9,7 @@ Programe:
 #4 Copy Excel to word. Open sheet Result2
 	#1 At Excel: Command + C (Copy ALL rows)
 	#2 At Word: Paste special -> Unformatted Text
-#5 Run Macro Bold -> It will RUN overnight.
+#5 Run Macro Bold -> It will RUN ~3 hours.
 
 Chùa Note:
 #1: Chạy Macro:
